@@ -5,9 +5,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+
+import java.util.*;
 
 @Entity
 @Table(name = "users")
@@ -25,23 +24,29 @@ public class User implements UserDetails {
 
     private String password;
 
+    private String email;
+
+    private String phoneNumber;
+
+    private Date deletedOn;
+
+    private String experience;
+
+    private int points;
+
+
+    @ManyToMany(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+    private List<Verb> verbs;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name="users_roles",
             joinColumns=@JoinColumn(name="user_id"),
             inverseJoinColumns=@JoinColumn(name="role_id"))
-    private List<Role> roles;
+    private Set<Role> authorities;
 
-    @OneToMany(mappedBy = "user")
-    private List<Order> orders;
 
     public User() {
-        this.roles = new ArrayList<Role>();
-        this.orders = new ArrayList<Order>();
-    }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.roles;
     }
 
     public String getId() {
@@ -66,14 +71,6 @@ public class User implements UserDetails {
 
     public void setUsername(String username) { this.username = username; }
 
-    public List<Order> getOrders() {
-        return orders;
-    }
-
-    public void setOrders(List<Order> orders) {
-        this.orders = orders;
-    }
-
     @Override
     public boolean isAccountNonExpired() {
         return true;
@@ -92,5 +89,65 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public Date getDeletedOn() {
+        return deletedOn;
+    }
+
+    public void setDeletedOn(Date deletedOn) {
+        this.deletedOn = deletedOn;
+    }
+
+    public String getExperience() {
+        return experience;
+    }
+
+    public void setExperience(String experience) {
+        this.experience = experience;
+    }
+
+    public int getPoints() {
+        return points;
+    }
+
+    public void setPoints(int points) {
+        this.points = points;
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return this.authorities;
+    }
+    public void setAuthorities(Set<Role> authorities) {
+        this.authorities = authorities;
+    }
+
+    public List<Verb> getVerbs() {
+        return verbs;
+    }
+
+    public void setVerbs(List<Verb> verbs) {
+        this.verbs = verbs;
+    }
+
+    public void addVerb(Verb verb) {
+        this.getVerbs().add(verb);
     }
 }

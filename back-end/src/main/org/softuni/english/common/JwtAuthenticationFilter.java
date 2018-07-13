@@ -9,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.FilterChain;
@@ -20,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
-    private static final int EXPIRATION_DURATION = 1200000;
+    private static final int EXPIRATION_DURATION = 12000;
 
     private final AuthenticationManager authenticationManager;
 
@@ -40,6 +41,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                             user.getPassword(),
                             new ArrayList<>())
             );
+
         } catch(IOException e) {
             throw new RuntimeException(e);
         }
@@ -56,8 +58,16 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
                 .signWith(SignatureAlgorithm.HS256, JwtSecurityConstants.SECRET.getBytes())
                 .compact();
 
-        response.getWriter().append("{\"Authorization\": \"Bearer " + token + "\"}");
+        String id =  ((User) authResult.getPrincipal()).getId();
+//        System.out.println(username);
+        String json = "{\"Authorization\": \"Bearer "+token+"\"," +
+                "\"id\": \""+id+"\"}";
+
+//        response.getWriter().append("{\"Authorization\": \"Bearer ").append(token).append("\",");
+//        response.getWriter().append("\"Username\": ").append(username).append("\"}");
         response.setContentType("application/json");
-//        response.addHeader("Authorization", "Bearer " + token);
+        response.getWriter().append(json);
+        response.addHeader("Authorization", "Bearer " + token);
+        response.addHeader("id", id);
     }
 }
