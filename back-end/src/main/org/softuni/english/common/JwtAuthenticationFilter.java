@@ -65,9 +65,10 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
 //        response.getWriter().append("{\"Authorization\": \"Bearer ").append(token).append("\",");
 //        response.getWriter().append("\"Username\": ").append(username).append("\"}");
-        response.setContentType("application/json");
+
         response.getWriter().append(json);
         response.addHeader("Authorization", "Bearer " + token);
         response.addHeader("id", id);
+        response.setContentType("application/json");
     }
 }

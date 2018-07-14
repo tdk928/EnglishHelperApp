@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.persistence.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -36,7 +37,10 @@ public class User implements UserDetails {
 
 
     @ManyToMany(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
-    private List<Verb> verbs;
+    @JoinTable(name="owned_verbs",
+            joinColumns=@JoinColumn(name="user_id"),
+            inverseJoinColumns=@JoinColumn(name="verb_id"))
+    private Set<Verb> verbs;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name="users_roles",
@@ -44,8 +48,14 @@ public class User implements UserDetails {
             inverseJoinColumns=@JoinColumn(name="role_id"))
     private Set<Role> authorities;
 
+    @ManyToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @JoinTable(name="user_knowledge",
+            joinColumns=@JoinColumn(name="user_id"),
+            inverseJoinColumns=@JoinColumn(name="verb_id"))
+    private Set<Verb> knowledge;
 
     public User() {
+        this.knowledge = new HashSet<>();
 
     }
 
@@ -139,15 +149,38 @@ public class User implements UserDetails {
         this.authorities = authorities;
     }
 
-    public List<Verb> getVerbs() {
+    public Set<Verb> getVerbs() {
         return verbs;
     }
 
-    public void setVerbs(List<Verb> verbs) {
+    public void setVerbs(Set<Verb> verbs) {
         this.verbs = verbs;
     }
 
-    public void addVerb(Verb verb) {
+    public void createVerb(Verb verb) {
         this.getVerbs().add(verb);
     }
+
+    public void removeVerb(Verb verb) {
+        Set<Verb> newVerbSet = this.getVerbs().stream().filter(e -> !e.getFirstForm().equals(verb.getFirstForm())).collect(Collectors.toSet());
+        this.setVerbs(newVerbSet);
+    }
+
+    public void addVerbKnowledge(Verb verb) {
+        this.getKnowledge().add(verb);
+    }
+
+
+
+    public Set<Verb> getKnowledge() {
+        return this.knowledge;
+    }
+
+    public void setKnowledge(Set<Verb> knowledge) {
+        this.knowledge = knowledge;
+    }
+
+
+
+
 }

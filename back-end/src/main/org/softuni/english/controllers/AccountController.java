@@ -1,21 +1,20 @@
 package org.softuni.english.controllers;
 
 import com.google.gson.Gson;
-import org.softuni.english.common.JwtAuthorizationFilter;
+import org.modelmapper.ModelMapper;
 import org.softuni.english.entities.User;
+import org.softuni.english.entities.Verb;
 import org.softuni.english.models.BindingModels.UserRegisterBindingModel;
+import org.softuni.english.models.BindingModels.VerbCreateBindingModel;
 import org.softuni.english.services.UserService;
+import org.softuni.english.services.VerbService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequestWrapper;
-import java.security.Principal;
+import java.util.List;
 
 @RestController
 
@@ -24,11 +23,15 @@ public class AccountController {
     private static final String EXIST_USER_MESSAGE = "User already exists.";
     private static final String SUCCESSFULLY_REGISTERED_USER = "Successfully registered user.";
     private final Gson gson;
+    private final ModelMapper modelMapper;
+    private final VerbService verbService;
 
     private final UserService userService;
 
-    public AccountController(Gson gson, UserService userService) {
+    public AccountController(Gson gson, ModelMapper modelMapper, VerbService verbService, UserService userService) {
         this.gson = gson;
+        this.modelMapper = modelMapper;
+        this.verbService = verbService;
         this.userService = userService;
     }
 
@@ -47,8 +50,7 @@ public class AccountController {
 
     @PostMapping(value = "/check")
     public ResponseEntity<?> checkForAdmin(HttpServletRequestWrapper httpRequestHandler) {
-//        JwtAuthorizationFilter jw  = new JwtAuthorizationFilter(authenticationManager(), this.userService),null);
-//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
         String currentlyLoggedInId = httpRequestHandler.getHeader("id");
         User user = this.userService.findById(currentlyLoggedInId);
         if (user == null) {
@@ -65,6 +67,31 @@ public class AccountController {
         return new ResponseEntity<>(json, HttpStatus.OK);
     }
 
+    @PostMapping(value = "/user/add",produces = "application/json")
+    public ResponseEntity<?> addVerb(@RequestBody VerbCreateBindingModel verb, HttpServletRequestWrapper httpRequestHandler) {
+        if(verb == null) {
+            return new ResponseEntity<>("nqma takuv verb", HttpStatus.BAD_REQUEST);
+        }
+
+        String currentlyLoggedInUserId = httpRequestHandler.getHeader("id");
+        User user = this.userService.findById(currentlyLoggedInUserId);
+
+        if(user == null) {
+            return new ResponseEntity<>("nqma takuv user", HttpStatus.BAD_REQUEST);
+        }
+
+        Verb currentlyVerb = this.modelMapper.map(verb, Verb.class);
+        user.removeVerb(currentlyVerb);
+        user.addVerbKnowledge(currentlyVerb);
+
+
+        if(this.userService.save(user)) {
+            this.verbService.deleteVerb(currentlyVerb.getFirstForm());
+            return new ResponseEntity<>("uspq da creatnish", HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Something went wrong while processing your request...", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     private boolean isAdmin(User user) {
         for (GrantedAuthority grantedAuthority : user.getAuthorities()) {
             return grantedAuthority.getAuthority().equals("ROLE_ADMIN");
@@ -72,13 +99,4 @@ public class AccountController {
 
         return true;
     }
-
-//    @PostMapping(value = "/login")
-//    public ResponseEntity<?> login() {
-//       System.out.println("login4i");
-//
-//        return new ResponseEntity<>("Something went wrong while processing your request...", HttpStatus.INTERNAL_SERVER_ERROR);
-//    }
-
-
 }

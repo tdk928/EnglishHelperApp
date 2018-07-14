@@ -30,19 +30,52 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+//        http
+//                .cors()
+//                .and()
+//                .csrf()
+//                .disable()
+//                .authorizeRequests()
+//                .antMatchers("/**").permitAll()
+//                .anyRequest().permitAll()
+//                .and()
+//                .formLogin()
+//                .loginPage("/login")
+//                .permitAll()
+//                .loginProcessingUrl("/login")
+//                .usernameParameter("username")
+//                .passwordParameter("password")
+//                .and()
+//                .addFilter(new JwtAuthenticationFilter(authenticationManager()))
+//                .addFilter(new JwtAuthorizationFilter(authenticationManager(), this.userService))
+//                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         http
                 .cors()
                 .and()
                 .csrf()
                 .disable()
                 .authorizeRequests()
-                .antMatchers("/register").permitAll()
+                .antMatchers("/register").permitAll().and()
 //                .antMatchers("/admin/**").hasAuthority("ADMIN")
 //                .anyRequest().authenticated()
-                .and()
+
+                .formLogin().successForwardUrl("/login").and()
                 .addFilter(new JwtAuthenticationFilter(authenticationManager()))
                 .addFilter(new JwtAuthorizationFilter(authenticationManager(), this.userService))
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+//        http
+//                .cors()
+//                .and()
+//                .csrf()
+//                .disable()
+//                .authorizeRequests()
+//                .antMatchers("/register").permitAll()
+//                .antMatchers("/admin/**").hasAuthority("ADMIN")
+//                .anyRequest().authenticated()
+//                .and()
+//                .addFilter(new JwtAuthenticationFilter(authenticationManager()))
+//                .addFilter(new JwtAuthorizationFilter(authenticationManager(), this.userService))
+//                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
     }
 

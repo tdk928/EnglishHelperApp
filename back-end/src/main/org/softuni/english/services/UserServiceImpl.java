@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = this.userRepository.findByUsernameAndDeletedOnIsNull(username);
+        User user = this.userRepository.findFirstByUsernameAndDeletedOnIsNull(username);
 
         if (user == null) {
             throw new UsernameNotFoundException("Username was not found.");

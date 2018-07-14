@@ -5,10 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, String> {
-    User findByUsernameAndDeletedOnIsNull(String username);
-
+public interface AdminRepository extends JpaRepository<User,String> {
     User findByIdAndDeletedOnIsNull(String id);
-
-    User findFirstByUsernameAndDeletedOnIsNull(String username);
 }
