@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface VerbRepository extends JpaRepository<Verb,String> {
      Verb findFirstByFirstForm(String id);
+
+     Verb findFirstById(String id);
 }

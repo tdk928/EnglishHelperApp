@@ -3,6 +3,7 @@ package org.softuni.english.services;
 import org.modelmapper.ModelMapper;
 import org.softuni.english.entities.Role;
 import org.softuni.english.entities.User;
+import org.softuni.english.entities.Verb;
 import org.softuni.english.models.BindingModels.UserRegisterBindingModel;
 import org.softuni.english.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,6 +15,7 @@ import org.springframework.validation.FieldError;
 
 import javax.validation.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -103,6 +105,17 @@ public class UserServiceImpl implements UserService {
         HashSet<Role> role = new HashSet<>();
         role.add(this.roleService.findById(ROLE_USER_ID));
         user.setAuthorities(role);
+    }
+
+    @Override
+    public int checkPoint(Verb verb) {
+        return verb.getFirstForm().length()+verb.getSecondForm().length()+verb.getThirdForm().length();
+
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        return this.userRepository.findAll();
     }
 
     @Override

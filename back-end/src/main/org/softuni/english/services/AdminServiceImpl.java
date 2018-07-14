@@ -3,6 +3,7 @@ package org.softuni.english.services;
 
 import org.softuni.english.entities.Role;
 import org.softuni.english.entities.User;
+import org.softuni.english.entities.Verb;
 import org.softuni.english.repositories.AdminRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -60,7 +61,26 @@ public class AdminServiceImpl implements AdminService{
     }
 
     @Override
+    public User findById(String id) {
+        return this.adminRepository.findByIdAndDeletedOnIsNull(id);
+    }
+
+    @Override
     public List<User> getAllUsers() {
         return this.adminRepository.findAll();
+    }
+
+    @Override
+    public boolean deleteVerbInUserList(Verb verb) {
+        List<User> allUsers = this.getAllUsers();
+        for (User user : allUsers) {
+            if(user.getVerbs().contains(verb)) {
+                user.removeVerb(verb);
+                this.adminRepository.save(user);
+            }
+        }
+
+        return true;
+
     }
 }

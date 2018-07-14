@@ -1,10 +1,13 @@
 package org.softuni.english.services;
 
 import org.softuni.english.entities.User;
+import org.softuni.english.entities.Verb;
 import org.softuni.english.models.BindingModels.UserRegisterBindingModel;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+
+import java.util.List;
 
 
 public interface UserService extends UserDetailsService {
@@ -13,6 +16,10 @@ public interface UserService extends UserDetailsService {
     boolean save(UserRegisterBindingModel userModel);
 
     boolean save(User user);
+
+    int checkPoint(Verb verb);
+
+    List<User> getAllUsers();
 
     User findByUsername(String username);
 

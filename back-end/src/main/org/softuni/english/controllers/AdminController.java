@@ -8,6 +8,7 @@ import org.softuni.english.services.VerbService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -46,12 +47,40 @@ public class AdminController {
 
     @PostMapping("/verb/delete/{id}")
     public ResponseEntity<?> deleteVerb(@PathVariable String id) {
-        System.out.println("vlqzah");
-//        if (this.verbService.deleteVerb(id)) {
-//            return new ResponseEntity<>("Successfully deleted verb.", HttpStatus.OK);
-//        }
+        Verb verbForDeleted = this.verbService.findById(id);
+        if(this.adminService.deleteVerbInUserList(verbForDeleted)) {
+            this.verbService.deleteVerb(verbForDeleted);
+            return new ResponseEntity<>("ok iztrih verb", HttpStatus.OK);
+        }
 
         return new ResponseEntity<>("Something went wrong while processing your request...", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @PostMapping(value = "/check")
+    public ResponseEntity<?> checkForAdmin(HttpServletRequestWrapper httpRequestHandler) {
+
+        String currentlyLoggedInId = httpRequestHandler.getHeader("id");
+        User user = this.adminService.findById(currentlyLoggedInId);
+        if (user == null) {
+            return new ResponseEntity<>("Something went wrong while processing your request...", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        String json = "";
+        if (this.isAdmin(user)) {
+            json = new Gson().toJson("yes");
+        } else {
+            json = new Gson().toJson("no");
+        }
+
+        return new ResponseEntity<>(json, HttpStatus.OK);
+    }
+
+    private boolean isAdmin(User user) {
+        for (GrantedAuthority grantedAuthority : user.getAuthorities()) {
+            return grantedAuthority.getAuthority().equals("ROLE_ADMIN");
+        }
+
+        return true;
     }
 
 

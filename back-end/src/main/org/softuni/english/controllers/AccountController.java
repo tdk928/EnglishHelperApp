@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 
@@ -48,62 +49,39 @@ public class AccountController {
         return new ResponseEntity<>("Something went wrong while processing your request...", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @PostMapping(value = "/check")
-    public ResponseEntity<?> checkForAdmin(HttpServletRequestWrapper httpRequestHandler) {
 
-        String currentlyLoggedInId = httpRequestHandler.getHeader("id");
-        User user = this.userService.findById(currentlyLoggedInId);
-        if (user == null) {
-            return new ResponseEntity<>("Something went wrong while processing your request...", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        String json = "";
-        if (this.isAdmin(user)) {
-            json = new Gson().toJson("yes");
-        } else {
-            json = new Gson().toJson("no");
-        }
-
-        return new ResponseEntity<>(json, HttpStatus.OK);
-    }
-
-    @PostMapping(value = "/user/add",produces = "application/json")
+    @PostMapping(value = "/user/add", produces = "application/json")
     public ResponseEntity<?> addVerb(@RequestBody VerbCreateBindingModel verb, HttpServletRequestWrapper httpRequestHandler) {
-        if(verb == null) {
+        if (verb == null) {
             return new ResponseEntity<>("nqma takuv verb", HttpStatus.BAD_REQUEST);
         }
 
         String currentlyLoggedInUserId = httpRequestHandler.getHeader("id");
         User user = this.userService.findById(currentlyLoggedInUserId);
 
-        if(user == null) {
+        if (user == null) {
             return new ResponseEntity<>("nqma takuv user", HttpStatus.BAD_REQUEST);
         }
 
         Verb currentlyVerb = this.modelMapper.map(verb, Verb.class);
         user.createVerb(currentlyVerb);
+        user.addPoints(this.userService.checkPoint(currentlyVerb));
 
-        if(this.userService.save(user)) {
-//            List<Verb> allVerbs = this.verbService.getAllVerbs();
-//            Verb deletedVerb = null;
-//            for (Verb v : allVerbs) {
-//                if(v.getFirstForm() == null) {
-//                    deletedVerb = v;
-//                    break;
-//                }
-//            }
-//            this.verbService.deleteVerb(deletedVerb);
-//            this.verbService.deleteVerb(currentlyVerb.getFirstForm());
+        if (this.userService.save(user)) {
             return new ResponseEntity<>("uspq da creatnish", HttpStatus.OK);
         }
         return new ResponseEntity<>("Something went wrong while processing your request...", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private boolean isAdmin(User user) {
-        for (GrantedAuthority grantedAuthority : user.getAuthorities()) {
-            return grantedAuthority.getAuthority().equals("ROLE_ADMIN");
-        }
-
-        return true;
+    @GetMapping(value = "/stats", produces = "application/json")
+    public ResponseEntity<?> allUsers() {
+        List<User> sortedUsers = this.userService.getAllUsers().stream().sorted((a, b) -> b.compareTo(a)).collect(Collectors.toList());
+        Gson gson = new Gson();
+        String json = gson.toJson(sortedUsers);
+        return new ResponseEntity<>(json, HttpStatus.OK);
     }
+
+
+
+
 }

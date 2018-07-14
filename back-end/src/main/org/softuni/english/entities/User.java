@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
-public class User implements UserDetails {
+public class User implements UserDetails, Comparable<User> {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(
@@ -37,15 +37,15 @@ public class User implements UserDetails {
 
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name="user_verbs",
-            joinColumns=@JoinColumn(name="user_id"),
-            inverseJoinColumns=@JoinColumn(name="verb_id"))
+    @JoinTable(name = "user_verbs",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "verb_id"))
     private Set<Verb> verbs;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name="users_roles",
-            joinColumns=@JoinColumn(name="user_id"),
-            inverseJoinColumns=@JoinColumn(name="role_id"))
+    @JoinTable(name = "users_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> authorities;
 
 
@@ -66,14 +66,18 @@ public class User implements UserDetails {
         return this.password;
     }
 
-    public void setPassword(String password) { this.password = password; }
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     @Override
     public String getUsername() {
         return this.username;
     }
 
-    public void setUsername(String username) { this.username = username; }
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     @Override
     public boolean isAccountNonExpired() {
@@ -139,6 +143,7 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.authorities;
     }
+
     public void setAuthorities(Set<Role> authorities) {
         this.authorities = authorities;
     }
@@ -155,10 +160,20 @@ public class User implements UserDetails {
         this.getVerbs().add(verb);
     }
 
-
+    public void addPoints(int points) {
+        this.setPoints(this.getPoints() + points);
+    }
 
     public void removeVerb(Verb verb) {
-        Set<Verb> newVerbSet = this.getVerbs().stream().filter(e -> !e.getFirstForm().equals(verb.getFirstForm())).collect(Collectors.toSet());
+        Set<Verb> newVerbSet = this.getVerbs().stream().filter(e -> !e.getId().equals(verb.getId())).collect(Collectors.toSet());
         this.setVerbs(newVerbSet);
+    }
+
+
+    @Override
+    public int compareTo(User u) {
+        if (this.getPoints() > u.getPoints()) return 1;
+        if (this.getPoints() < u.getPoints()) return -1;
+        else return 0;
     }
 }

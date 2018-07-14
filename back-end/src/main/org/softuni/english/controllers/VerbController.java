@@ -59,7 +59,7 @@ public class VerbController {
     @GetMapping(value = "/verbs/all",produces = "application/json")
     public ResponseEntity<?> allVerb() {
         List<Verb> allVerbs = this.verbService.getAllVerbs();
-        String json = new Gson().toJson(allVerbs);
+//        String json = new Gson().toJson(allVerbs);
         return new ResponseEntity<>(allVerbs, HttpStatus.OK);
     }
 
@@ -72,19 +72,10 @@ public class VerbController {
             return new ResponseEntity<>(DB_DONT_HAVE_THIS_USERNAME, HttpStatus.BAD_REQUEST);
         }
 
-        List<Verb> allVerbs =  this.verbService.getAllVerbs();
-        List<Verb> newVerbs = new ArrayList<>();
-        for (Verb verb : allVerbs) {
-            if(!user.getVerbs().contains(verb)) {
-                newVerbs.add(verb);
-            }
-        }
-//        List<Verb> userVerb = user.getVerbs().stream().filter(v -> allVerbs.contains(v)).collect(Collectors.toList());
+        List<Verb> userVerbs = this.verbService.getUserVerbs(user);
 
         Gson gson = new Gson();
-        String json = gson.toJson(newVerbs);
+        String json = gson.toJson(userVerbs);
         return new ResponseEntity<>(json, HttpStatus.OK);
     }
-
-
 }
