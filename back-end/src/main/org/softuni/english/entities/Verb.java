@@ -3,6 +3,7 @@ package org.softuni.english.entities;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Entity
@@ -17,13 +18,21 @@ public class Verb {
     @Column(name = "id", updatable = false, nullable = false)
     private String id;
 
+    @Column(unique = true)
     private String firstForm;
 
+    @Column(unique = true)
     private String secondForm;
 
+    @Column(unique = true)
     private String thirdForm;
 
+    @Column(unique = true)
     private String translate;
+
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "user_id", nullable = false)
+//    private User user;
 
     public Verb() {
     }
@@ -68,4 +77,11 @@ public class Verb {
         this.translate = translate;
     }
 
+//    public User getUser() {
+//        return user;
+//    }
+//
+//    public void setUser(User user) {
+//        this.user = user;
+//    }
 }

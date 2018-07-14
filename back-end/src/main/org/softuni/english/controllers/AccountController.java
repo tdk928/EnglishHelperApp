@@ -81,12 +81,19 @@ public class AccountController {
         }
 
         Verb currentlyVerb = this.modelMapper.map(verb, Verb.class);
-        user.removeVerb(currentlyVerb);
-        user.addVerbKnowledge(currentlyVerb);
-
+        user.createVerb(currentlyVerb);
 
         if(this.userService.save(user)) {
-            this.verbService.deleteVerb(currentlyVerb.getFirstForm());
+//            List<Verb> allVerbs = this.verbService.getAllVerbs();
+//            Verb deletedVerb = null;
+//            for (Verb v : allVerbs) {
+//                if(v.getFirstForm() == null) {
+//                    deletedVerb = v;
+//                    break;
+//                }
+//            }
+//            this.verbService.deleteVerb(deletedVerb);
+//            this.verbService.deleteVerb(currentlyVerb.getFirstForm());
             return new ResponseEntity<>("uspq da creatnish", HttpStatus.OK);
         }
         return new ResponseEntity<>("Something went wrong while processing your request...", HttpStatus.INTERNAL_SERVER_ERROR);

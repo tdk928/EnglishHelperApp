@@ -29,11 +29,13 @@ public class VerbServiceImpl implements VerbService{
     }
 
     @Override
-    public boolean deleteVerb(String firstForm) {
-        Verb verb = this.verbRepository.findFirstByFirstForm(firstForm);
-        if(verb == null) {
-            return  false;
-        }
+    public boolean createVerb(Verb verb) {
+        this.verbRepository.save(verb);
+        return true;
+    }
+
+    @Override
+    public boolean deleteVerb(Verb verb) {
         this.verbRepository.delete(verb);
         return true;
     }

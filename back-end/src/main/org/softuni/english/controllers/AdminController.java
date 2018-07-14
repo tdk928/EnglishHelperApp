@@ -24,16 +24,6 @@ public class AdminController {
         this.verbService = verbService;
     }
 
-    @PostMapping( value =  "/user/delete/{id}" )
-    public ResponseEntity<?> deleteUser(@PathVariable String id, HttpServletRequestWrapper httpRequestHandler) {
-        String currentlyLoggedInId = httpRequestHandler.getHeader("id");
-
-        if (this.adminService.deleteUser(id,currentlyLoggedInId)) {
-            return new ResponseEntity<>("Successfully deleted.", HttpStatus.OK);
-        }
-        return new ResponseEntity<>("Something went wrong while processing your request...", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
     @GetMapping(value = "/users/all", produces = "application/json")
     public ResponseEntity<?> allUsers(Principal principal) {
         List<User> allUsers = this.adminService.getAllUsers();
@@ -44,12 +34,22 @@ public class AdminController {
 
 
 
+    @PostMapping( value =  "/user/delete/{id}" )
+    public ResponseEntity<?> deleteUser(@PathVariable String id, HttpServletRequestWrapper httpRequestHandler) {
+        String currentlyLoggedInId = httpRequestHandler.getHeader("id");
+
+        if (this.adminService.deleteUser(id,currentlyLoggedInId)) {
+            return new ResponseEntity<>("Successfully deleted.", HttpStatus.OK);
+        }
+        return new ResponseEntity<>("Something went wrong while processing your request...", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @PostMapping("/verb/delete/{id}")
     public ResponseEntity<?> deleteVerb(@PathVariable String id) {
         System.out.println("vlqzah");
-        if (this.verbService.deleteVerb(id)) {
-            return new ResponseEntity<>("Successfully deleted verb.", HttpStatus.OK);
-        }
+//        if (this.verbService.deleteVerb(id)) {
+//            return new ResponseEntity<>("Successfully deleted verb.", HttpStatus.OK);
+//        }
 
         return new ResponseEntity<>("Something went wrong while processing your request...", HttpStatus.INTERNAL_SERVER_ERROR);
     }

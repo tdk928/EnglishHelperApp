@@ -36,8 +36,8 @@ public class User implements UserDetails {
     private int points;
 
 
-    @ManyToMany(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
-    @JoinTable(name="owned_verbs",
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name="user_verbs",
             joinColumns=@JoinColumn(name="user_id"),
             inverseJoinColumns=@JoinColumn(name="verb_id"))
     private Set<Verb> verbs;
@@ -48,15 +48,9 @@ public class User implements UserDetails {
             inverseJoinColumns=@JoinColumn(name="role_id"))
     private Set<Role> authorities;
 
-    @ManyToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
-    @JoinTable(name="user_knowledge",
-            joinColumns=@JoinColumn(name="user_id"),
-            inverseJoinColumns=@JoinColumn(name="verb_id"))
-    private Set<Verb> knowledge;
 
     public User() {
-        this.knowledge = new HashSet<>();
-
+        this.verbs = new HashSet<>();
     }
 
     public String getId() {
@@ -161,26 +155,10 @@ public class User implements UserDetails {
         this.getVerbs().add(verb);
     }
 
+
+
     public void removeVerb(Verb verb) {
         Set<Verb> newVerbSet = this.getVerbs().stream().filter(e -> !e.getFirstForm().equals(verb.getFirstForm())).collect(Collectors.toSet());
         this.setVerbs(newVerbSet);
     }
-
-    public void addVerbKnowledge(Verb verb) {
-        this.getKnowledge().add(verb);
-    }
-
-
-
-    public Set<Verb> getKnowledge() {
-        return this.knowledge;
-    }
-
-    public void setKnowledge(Set<Verb> knowledge) {
-        this.knowledge = knowledge;
-    }
-
-
-
-
 }

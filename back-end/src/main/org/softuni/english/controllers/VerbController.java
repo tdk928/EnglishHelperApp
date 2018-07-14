@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequestWrapper;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -48,9 +49,8 @@ public class VerbController {
         }
 
         Verb currentlyVerb = this.modelMapper.map(verb, Verb.class);
-        user.createVerb(currentlyVerb);
 
-        if(this.userService.save(user)) {
+        if(this.verbService.createVerb(currentlyVerb)) {
             return new ResponseEntity<>(SUCCESSFULLY_CREATED_VERB, HttpStatus.OK);
         }
         return new ResponseEntity<>("Something went wrong while processing your request...", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -73,15 +73,16 @@ public class VerbController {
         }
 
         List<Verb> allVerbs =  this.verbService.getAllVerbs();
+        List<Verb> newVerbs = new ArrayList<>();
         for (Verb verb : allVerbs) {
             if(!user.getVerbs().contains(verb)) {
-                user.createVerb(verb);
+                newVerbs.add(verb);
             }
         }
-//        List<Verb> userVerb = user.getVerbs().stream().filter(v -> !allVerbs.contains(v)).collect(Collectors.toList());
+//        List<Verb> userVerb = user.getVerbs().stream().filter(v -> allVerbs.contains(v)).collect(Collectors.toList());
 
         Gson gson = new Gson();
-        String json = gson.toJson(user.getVerbs());
+        String json = gson.toJson(newVerbs);
         return new ResponseEntity<>(json, HttpStatus.OK);
     }
 

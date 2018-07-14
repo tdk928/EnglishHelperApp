@@ -8,7 +8,9 @@ import java.util.List;
 public interface VerbService {
     boolean save(VerbCreateBindingModel verb);
 
-    boolean deleteVerb(String id);
+    boolean createVerb(Verb verb);
+
+    boolean deleteVerb(Verb verb);
 
     List<Verb> getAllVerbs();
 
