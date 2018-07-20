@@ -4,6 +4,7 @@ import org.modelmapper.ModelMapper;
 import org.softuni.english.entities.Role;
 import org.softuni.english.entities.User;
 import org.softuni.english.entities.Verb;
+import org.softuni.english.models.BindingModels.UserEditBindingModel;
 import org.softuni.english.models.BindingModels.UserRegisterBindingModel;
 import org.softuni.english.repositories.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,7 +21,8 @@ import java.util.Set;
 
 @Service
 public class UserServiceImpl implements UserService {
-    private static final long ROLE_USER_ID = 1L;
+
+    private static final long USER_ID = 1L;
 
     private final UserRepository userRepository;
 
@@ -32,7 +34,7 @@ public class UserServiceImpl implements UserService {
 
     private Validator validator;
 
-    public UserServiceImpl(UserRepository userRepository, ModelMapper modelMapper, BCryptPasswordEncoder bCryptPasswordEncoder, RoleService roleService ) {
+    public UserServiceImpl(UserRepository userRepository, ModelMapper modelMapper, BCryptPasswordEncoder bCryptPasswordEncoder, RoleService roleService) {
         this.userRepository = userRepository;
         this.modelMapper = modelMapper;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
@@ -65,20 +67,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean save(UserRegisterBindingModel userModel) {
         Set<ConstraintViolation<UserRegisterBindingModel>> violations = validator.validate(userModel);
-        if(violations.size() > 0) {
+        if (violations.size() > 0) {
             return false;
         }
-
-//        for (ConstraintViolation<UserRegisterBindingModel> violation : violations)
-//        {
-//            String propertyPath = violation.getPropertyPath().toString();
-//            String message = violation.getMessage();
-//            System.out.println("msg is -> "+message);
-//
-//            bindingResult.addError(new FieldError("user",propertyPath,
-//
-//                    "Invalid "+ propertyPath + "(" + message + ")"));
-//        }
 
         if (!userModel.getPassword().equals(userModel.getConfirmPassword())) {
             return false;
@@ -88,30 +79,25 @@ public class UserServiceImpl implements UserService {
 
         user.setPassword(this.bCryptPasswordEncoder.encode(user.getPassword()));
         user.setExperience("Beginner");
-        user.setPhoneNumber("+359"+user.getPhoneNumber());
+        user.setPhoneNumber("+359" + user.getPhoneNumber());
         this.makeUserAdmin(user);
         this.userRepository.save(user);
 
         return true;
     }
 
-    @Override
-    public boolean save(User user) {
-        this.userRepository.save(user);
-        return true;
-    }
+
+
 
     private void makeUserAdmin(User user) {
         HashSet<Role> role = new HashSet<>();
-        role.add(this.roleService.findById(ROLE_USER_ID));
+        role.add(this.roleService.findById(USER_ID));
         user.setAuthorities(role);
     }
 
-    @Override
-    public int checkPoint(Verb verb) {
-        return verb.getFirstForm().length()+verb.getSecondForm().length()+verb.getThirdForm().length();
 
-    }
+
+
 
     @Override
     public List<User> getAllUsers() {

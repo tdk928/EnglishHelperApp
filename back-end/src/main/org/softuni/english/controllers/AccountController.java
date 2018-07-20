@@ -1,87 +1,112 @@
 package org.softuni.english.controllers;
 
 import com.google.gson.Gson;
-import org.modelmapper.ModelMapper;
 import org.softuni.english.entities.User;
-import org.softuni.english.entities.Verb;
 import org.softuni.english.models.BindingModels.UserRegisterBindingModel;
-import org.softuni.english.models.BindingModels.VerbCreateBindingModel;
 import org.softuni.english.services.UserService;
-import org.softuni.english.services.VerbService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequestWrapper;
+import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-
 public class AccountController {
 
     private static final String EXIST_USER_MESSAGE = "User already exists.";
     private static final String SUCCESSFULLY_REGISTERED_USER = "Successfully registered user.";
-    private final Gson gson;
-    private final ModelMapper modelMapper;
-    private final VerbService verbService;
+    private static final String REGISTER_ROUTE = "/register";
+    private static final String SERVER_ERROR = "Something went wrong while processing your request...";
+    private static final String STATS_ROUTE = "/stats";
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String DETAILS_ROUTE = "/details/{id}";
+    private static final String USER_NOT_EXISTS = "We don't have this user in db";
+    private static final int CODE_NUMBER = 4;
+    private static final String CHECK_ROUTE = "/check";
+    private static final String IS_ADMIN = "yes";
+    private static final String NOT_ADMIN = "no";
+    private static final String ALL_USERS_ROUTE = "/users/all";
+    private static final String ROLE_ADMIN = "ROLE_ADMIN";
+
 
     private final UserService userService;
+    private final Gson gson;
 
-    public AccountController(Gson gson, ModelMapper modelMapper, VerbService verbService, UserService userService) {
-        this.gson = gson;
-        this.modelMapper = modelMapper;
-        this.verbService = verbService;
+    public AccountController(UserService userService, Gson gson) {
         this.userService = userService;
+        this.gson = gson;
     }
 
-    @PostMapping(value = "/register")
+    @PostMapping(value = REGISTER_ROUTE)
     public ResponseEntity<?> register(@RequestBody UserRegisterBindingModel user) {
         if (this.userService.userExists(user.getUsername())) {
-            return new ResponseEntity<>(EXIST_USER_MESSAGE, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(this.gson.toJson(EXIST_USER_MESSAGE), HttpStatus.BAD_REQUEST);
         }
 
         if (this.userService.save(user)) {
             return new ResponseEntity<>(SUCCESSFULLY_REGISTERED_USER, HttpStatus.OK);
         }
 
-        return new ResponseEntity<>("Something went wrong while processing your request...", HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(this.gson.toJson(SERVER_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-
-    @PostMapping(value = "/user/add", produces = "application/json")
-    public ResponseEntity<?> addVerb(@RequestBody VerbCreateBindingModel verb, HttpServletRequestWrapper httpRequestHandler) {
-        if (verb == null) {
-            return new ResponseEntity<>("nqma takuv verb", HttpStatus.BAD_REQUEST);
-        }
-
-        String currentlyLoggedInUserId = httpRequestHandler.getHeader("id");
-        User user = this.userService.findById(currentlyLoggedInUserId);
-
-        if (user == null) {
-            return new ResponseEntity<>("nqma takuv user", HttpStatus.BAD_REQUEST);
-        }
-
-        Verb currentlyVerb = this.modelMapper.map(verb, Verb.class);
-        user.createVerb(currentlyVerb);
-        user.addPoints(this.userService.checkPoint(currentlyVerb));
-
-        if (this.userService.save(user)) {
-            return new ResponseEntity<>("uspq da creatnish", HttpStatus.OK);
-        }
-        return new ResponseEntity<>("Something went wrong while processing your request...", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @GetMapping(value = "/stats", produces = "application/json")
-    public ResponseEntity<?> allUsers() {
+    @GetMapping(value = STATS_ROUTE, produces = APPLICATION_JSON)
+    public ResponseEntity<?> allSoretedUsers() {
         List<User> sortedUsers = this.userService.getAllUsers().stream().sorted((a, b) -> b.compareTo(a)).collect(Collectors.toList());
         Gson gson = new Gson();
         String json = gson.toJson(sortedUsers);
         return new ResponseEntity<>(json, HttpStatus.OK);
     }
 
+    @GetMapping(DETAILS_ROUTE)
+    public ResponseEntity<?> userDetails(@PathVariable String id) {
+        User user = this.userService.findById(id);
+        if (user == null) {
+            return new ResponseEntity<>(this.gson.toJson(USER_NOT_EXISTS), HttpStatus.FORBIDDEN);
+        }
+        user.setPhoneNumber(user.getPhoneNumber().substring(CODE_NUMBER));
+        List<User> list = new ArrayList<>();
+        list.add(user);
+        return new ResponseEntity<>(this.gson.toJson(list), HttpStatus.OK);
+    }
 
+    @PostMapping(value = CHECK_ROUTE)
+    public ResponseEntity<?> checkForAdmin(Principal principal) {
+        if (principal == null) {
+            return new ResponseEntity<>(this.gson.toJson(SERVER_ERROR), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        User user = this.userService.findByUsername(principal.getName());
+        if (user == null) {
+            return new ResponseEntity<>(this.gson.toJson(USER_NOT_EXISTS), HttpStatus.FORBIDDEN);
+        }
+
+        String json = "";
+        if (this.isAdmin(user)) {
+            json = this.gson.toJson(IS_ADMIN);
+        } else {
+           json =  this.gson.toJson(NOT_ADMIN);
+        }
+
+        return new ResponseEntity<>(json, HttpStatus.OK);
+    }
+
+    @GetMapping(value = ALL_USERS_ROUTE, produces = APPLICATION_JSON)
+    public ResponseEntity<?> allUsers() {
+        List<User> allUsers = this.userService.getAllUsers();
+        return new ResponseEntity<>(this.gson.toJson(allUsers), HttpStatus.OK);
+    }
+
+
+    private boolean isAdmin(User user) {
+        for (GrantedAuthority grantedAuthority : user.getAuthorities()) {
+            return grantedAuthority.getAuthority().equals(ROLE_ADMIN);
+        }
+        return true;
+    }
 
 
 }

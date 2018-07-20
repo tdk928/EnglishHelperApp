@@ -4,7 +4,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
 
-public class VerbCreateBindingModel {
+public class VerbEditBindingModel {
     private static final int MIN_VERB_LENGTH = 1;
     private static final int MAX_VERB_LENGTH = 20;
     private static final int MIN_TRANSLATE_LENGTH = 1;
@@ -29,7 +29,7 @@ public class VerbCreateBindingModel {
     @Size(min = MIN_TRANSLATE_LENGTH,max = MAX_VERB_TRANSLATE_LENGTH)
     private String translate;
 
-    public VerbCreateBindingModel() {
+    public VerbEditBindingModel() {
     }
 
     public String getId() {

@@ -17,7 +17,9 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 
+@Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final UserService userService;
 
@@ -49,20 +51,6 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 //                .addFilter(new JwtAuthenticationFilter(authenticationManager()))
 //                .addFilter(new JwtAuthorizationFilter(authenticationManager(), this.userService))
 //                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-        http
-                .cors()
-                .and()
-                .csrf()
-                .disable()
-                .authorizeRequests()
-                .antMatchers("/register").permitAll().and()
-//                .antMatchers("/admin/**").hasAuthority("ADMIN")
-//                .anyRequest().authenticated()
-
-                .formLogin().successForwardUrl("/login").and()
-                .addFilter(new JwtAuthenticationFilter(authenticationManager()))
-                .addFilter(new JwtAuthorizationFilter(authenticationManager(), this.userService))
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 //        http
 //                .cors()
 //                .and()
@@ -70,12 +58,32 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 //                .disable()
 //                .authorizeRequests()
 //                .antMatchers("/register").permitAll()
-//                .antMatchers("/admin/**").hasAuthority("ADMIN")
-//                .anyRequest().authenticated()
 //                .and()
+//                .formLogin().successForwardUrl("/login").and()
 //                .addFilter(new JwtAuthenticationFilter(authenticationManager()))
 //                .addFilter(new JwtAuthorizationFilter(authenticationManager(), this.userService))
 //                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+
+        http
+                .cors()
+                .and()
+                .csrf()
+                .disable()
+                .authorizeRequests()
+                .antMatchers("/**").permitAll()
+                .anyRequest().permitAll()
+                .and()
+                .formLogin()
+                .loginPage("/login")
+                .permitAll()
+                .loginProcessingUrl("/login")
+                .usernameParameter("username")
+                .passwordParameter("password")
+                .and()
+                .addFilter(new JwtAuthenticationFilter(authenticationManager()))
+                .addFilter(new JwtAuthorizationFilter(authenticationManager(), this.userService))
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
     }
 

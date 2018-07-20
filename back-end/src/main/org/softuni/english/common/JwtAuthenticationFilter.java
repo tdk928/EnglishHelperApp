@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
-    private static final int EXPIRATION_DURATION = 12000;
+    private static final int EXPIRATION_DURATION = 12000000;
 
     private final AuthenticationManager authenticationManager;
 
